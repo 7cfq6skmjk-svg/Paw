@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Add Student</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="navbar"><div class="inner"><div class="brand">Attendance Manager</div><div class="navlinks"><a href="index.html">Home</a><a href="attendance.html">Absences</a><a href="report.html">Report</a><button id="logoutBtn" class="btn btn-ghost">Déconnexion</button></div></div></div>
+<div class="container">
+<h1>Add Student</h1>
+<div class="card" style="max-width:700px">
+  <div class="row">
+    <div>
+      <label for="studentId">Student ID</label>
+      <input id="studentId" type="text" />
+      <div id="idError" class="error"></div>
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input id="email" type="text" />
+      <div id="emailError" class="error"></div>
+    </div>
+    <div>
+      <label for="lastName">Last Name</label>
+      <input id="lastName" type="text" />
+      <div id="lastError" class="error"></div>
+    </div>
+    <div>
+      <label for="firstName">First Name</label>
+      <input id="firstName" type="text" />
+      <div id="firstError" class="error"></div>
+    </div>
+  </div>
+  <button id="addStudent" class="btn btn-primary">Add Student</button>
+  <div id="addConfirm"></div>
+</div>
+<script src="./data.js?v=2"></script>
+<script>
+function validate(){var id=$('#studentId').val().trim();var email=$('#email').val().trim();var last=$('#lastName').val().trim();var first=$('#firstName').val().trim();var ok=true;$('#idError,#emailError,#lastError,#firstError').text('');if(id===''||!/^\d+$/.test(id)){ok=false;$('#idError').text('ID must be numbers only')}if(email===''||/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)===false){ok=false;$('#emailError').text('Email must be valid')}if(last===''||/^[A-Za-z]+$/.test(last)===false){ok=false;$('#lastError').text('Last Name must contain only letters')}if(first===''||/^[A-Za-z]+$/.test(first)===false){ok=false;$('#firstError').text('First Name must contain only letters')}return ok}
+$('#addStudent').on('click',function(){if(!validate())return;var s=AttData.loadStudents();s.push({id:$('#studentId').val().trim(),email:$('#email').val().trim(),last:$('#lastName').val().trim(),first:$('#firstName').val().trim(),sessions:[false,false,false,false,false,false],participation:[false,false,false,false,false,false]});AttData.saveStudents(s);$('#addConfirm').text('Student added');$('#studentId,#email,#lastName,#firstName').val('')})
+$(function(){AttData.ensureSeed();$('#studentId').on('input',function(){var v=$(this).val();var nv=v.replace(/\D+/g,'');if(nv!==v){$(this).val(nv);$('#idError').text('Only numbers')}else{$('#idError').text('')}});$('#lastName').on('input',function(){var v=$(this).val();var nv=v.replace(/[^A-Za-z]+/g,'');if(nv!==v){$(this).val(nv);$('#lastError').text('Only letters')}else{$('#lastError').text('')}});$('#firstName').on('input',function(){var v=$(this).val();var nv=v.replace(/[^A-Za-z]+/g,'');if(nv!==v){$(this).val(nv);$('#firstError').text('Only letters')}else{$('#firstError').text('')}})})
+$('#logoutBtn').on('click',function(){localStorage.removeItem('students');location.href='index.html'})
+</script>
+</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Absences Table</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="navbar"><div class="inner"><div class="brand">Attendance Manager</div><div class="navlinks"><a href="index.html">Home</a><a href="add.html">Add Student</a><a href="report.html">Report</a><button id="logoutBtn" class="btn btn-ghost">Déconnexion</button></div></div></div>
+<div class="container">
+<h1>Absences Table</h1>
+<div class="controls">
+  <input id="searchName" class="search" placeholder="Search by Name" />
+  <button id="sortAbsAsc" class="btn btn-warning">Sort by Absences (Ascending)</button>
+  <button id="sortParDesc" class="btn btn-secondary">Sort by Participation (Descending)</button>
+  <button id="showReport" class="btn btn-primary">Show Report</button>
+  <button id="highlightExcellent" class="btn btn-secondary">Highlight Excellent Students</button>
+  <button id="resetColors" class="btn btn-ghost">Reset Colors</button>
+  <span id="sortInfo"></span>
+</div>
+<div class="table-wrap">
+<table id="attendance">
+  <thead>
+    <tr>
+      <th>Last</th>
+      <th>First</th>
+      <th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>S6</th>
+      <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th>
+      <th>Absences</th>
+      <th>Participation</th>
+      <th>Message</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+  </table>
+</div>
+<div class="card" id="nameCard" style="margin-top:12px;display:none">
+  <div class="summary" id="nameText"></div>
+</div>
+<div class="card" id="reportCard" style="margin-top:12px;display:none">
+  <div class="summary" id="reportText"></div>
+  <canvas id="reportChart" height="220"></canvas>
+</div>
+<footer>Click cells to toggle attendance and participation.</footer>
+</div>
+<script src="./data.js?v=2"></script>
+<script>
+function rowHtml(stu){function c(v){return v?'✓':''}var s=stu.sessions.map(c);var p=stu.participation.map(c);return '<tr>'+'<td class="name">'+stu.last+'</td>'+'<td class="name">'+stu.first+'</td>'+'<td class="att" data-si="0">'+s[0]+'</td>'+'<td class="att" data-si="1">'+s[1]+'</td>'+'<td class="att" data-si="2">'+s[2]+'</td>'+'<td class="att" data-si="3">'+s[3]+'</td>'+'<td class="att" data-si="4">'+s[4]+'</td>'+'<td class="att" data-si="5">'+s[5]+'</td>'+'<td class="par" data-pi="0">'+p[0]+'</td>'+'<td class="par" data-pi="1">'+p[1]+'</td>'+'<td class="par" data-pi="2">'+p[2]+'</td>'+'<td class="par" data-pi="3">'+p[3]+'</td>'+'<td class="par" data-pi="4">'+p[4]+'</td>'+'<td class="par" data-pi="5">'+p[5]+'</td>'+'<td class="abs"></td><td class="parcount"></td><td class="msg"></td>'+'</tr>'}
+function updateRow($tr,stu){var abs=AttData.absencesCount(stu);var par=AttData.participationCount(stu);$tr.removeClass('green yellow red').addClass(AttData.classifyRow(abs));$tr.find('td.abs').text(abs+' Abs');$tr.find('td.parcount').text(par+' Par');$tr.find('td.msg').text(AttData.makeMessage(abs,par))}
+function render(){var s=AttData.ensureSeed();var tb=$('#attendance tbody');tb.empty();s.forEach(function(stu){var $r=$(rowHtml(stu));updateRow($r,stu);tb.append($r)})}
+function saveFromDom(){var s=[];$('#attendance tbody tr').each(function(){var $tr=$(this);var last=$tr.find('td.name').eq(0).text().trim();var first=$tr.find('td.name').eq(1).text().trim();var stu={last:first?last:last,first:first,sessions:[],participation:[],id:'',email:''};$tr.find('td.att').each(function(){stu.sessions.push($(this).text().trim()==='✓')});$tr.find('td.par').each(function(){stu.participation.push($(this).text().trim()==='✓')});s.push(stu)});AttData.saveStudents(s)}
+$(document).on('click','#attendance td.att',function(e){e.stopPropagation();var $tr=$(this).closest('tr');var si=parseInt($(this).data('si'));var studs=AttData.loadStudents();var idx=$tr.index();studs[idx].sessions[si]=!studs[idx].sessions[si];$(this).text(studs[idx].sessions[si]?'✓':'');updateRow($tr,studs[idx]);AttData.saveStudents(studs)});
+$(document).on('click','#attendance td.par',function(e){e.stopPropagation();var $tr=$(this).closest('tr');var pi=parseInt($(this).data('pi'));var studs=AttData.loadStudents();var idx=$tr.index();studs[idx].participation[pi]=!studs[idx].participation[pi];$(this).text(studs[idx].participation[pi]?'✓':'');updateRow($tr,studs[idx]);AttData.saveStudents(studs)});
+$(document).on('mouseenter','#attendance tbody tr',function(){$(this).addClass('hover')});
+$(document).on('mouseleave','#attendance tbody tr',function(){$(this).removeClass('hover')});
+$('#searchName').on('input',function(){var q=$(this).val().trim().toLowerCase();$('#attendance tbody tr').each(function(){var last=$(this).find('td.name').eq(0).text().toLowerCase();var first=$(this).find('td.name').eq(1).text().toLowerCase();$(this).toggle(last.includes(q)||first.includes(q))})});
+$('#sortAbsAsc').on('click',function(){var rows=$('#attendance tbody tr').get();rows.sort(function(a,b){var studs=AttData.loadStudents();return AttData.absencesCount(studs[$(a).index()])-AttData.absencesCount(studs[$(b).index()])});$('#attendance tbody').append(rows);$('#sortInfo').text('Currently sorted by absences (ascending)')});
+$('#sortParDesc').on('click',function(){var rows=$('#attendance tbody tr').get();rows.sort(function(a,b){var studs=AttData.loadStudents();return AttData.participationCount(studs[$(b).index()])-AttData.participationCount(studs[$(a).index()])});$('#attendance tbody').append(rows);$('#sortInfo').text('Currently sorted by participation (descending)')});
+var summaryChart;
+$('#showReport').on('click',function(){var studs=AttData.loadStudents();var total=studs.length;var presentS6=studs.filter(function(s){return !!(s.sessions&&s.sessions[5])}).length;var participated=studs.filter(function(s){return AttData.participationCount(s)>0}).length;$('#reportText').text('Total: '+total+' · Present in S6: '+presentS6+' · Participated: '+participated);$('#reportCard').show();var ctx=document.getElementById('reportChart').getContext('2d');var data={labels:['Total','Present S6','Participated'],datasets:[{data:[total,presentS6,participated],backgroundColor:['#0ea5e9','#10b981','#f59e0b']}]};if(summaryChart){summaryChart.data=data;summaryChart.update()}else{summaryChart=new Chart(ctx,{type:'bar',data:data,options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,precision:0}}}})}});
+$(document).on('click','#attendance tbody tr',function(){var last=$(this).find('td.name').eq(0).text();var first=$(this).find('td.name').eq(1).text();var presents=$(this).find('td.att').filter(function(){return $(this).text().trim()==='✓'}).length;var abs=$(this).find('td.att').length-presents;alert(first+' '+last+' · '+abs+' absences')});
+$('#highlightExcellent').on('click',function(){var rows=$('#attendance tbody tr');rows.each(function(){var $tr=$(this);var t=$tr.find('td.abs').text();var abs=parseInt(t)||0;if(abs<3){$tr.addClass('excellent').css('opacity',1)}})});
+$('#resetColors').on('click',function(){$('#attendance tbody tr').removeClass('excellent').stop(true,true).css('opacity',1)});
+$('#logoutBtn').on('click',function(){localStorage.removeItem('students');location.href='index.html'});
+$(function(){render()})
+</script>
+</body>
+</html>

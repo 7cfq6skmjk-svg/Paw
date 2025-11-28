@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Attendance Manager — Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="navbar"><div class="inner"><div class="brand">Attendance Manager</div><div class="navlinks"><a href="attendance.html">Absences</a><a href="add.html">Add Student</a><a href="report.html">Report</a><button id="logoutBtn" class="btn btn-ghost">Déconnexion</button></div></div></div>
+<div class="container">
+  <h1>Welcome</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Absences Table</h2>
+      <p>View and update attendance and participation.</p>
+      <a class="btn btn-primary" href="attendance.html">Open Table</a>
+    </div>
+    <div class="card">
+      <h2>Add Student</h2>
+      <p>Add new students with validation.</p>
+      <a class="btn btn-secondary" href="add.html">Add Student</a>
+    </div>
+    <div class="card">
+      <h2>Report</h2>
+      <p>See per‑student bar charts.</p>
+      <a class="btn btn-ghost" href="report.html">View Report</a>
+    </div>
+  </div>
+  <footer>Data is stored in your browser.</footer>
+</div>
+<script src="./data.js?v=2"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){window.AttData.ensureSeed();var b=document.getElementById('logoutBtn');if(b){b.addEventListener('click',function(){localStorage.removeItem('students');location.href='index.html'})}})</script>
+</body>
+</html>
